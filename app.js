@@ -1,42 +1,22 @@
-const questions = [
-  {
-    question: "Какой язык работает в браузере?",
-    answers: ["Java", "C", "Python", "JavaScript"],
-    correct: 4,
-  },
-  {
-    question: "Что означает CSS?",
-    answers: [
-      "Central Style Sheets",
-      "Cascading Style Sheets",
-      "Cascading Simple Sheets",
-      "Cars SUVs Sailboats",
-    ],
-    correct: 2,
-  },
-  {
-    question: "Что означает HTML?",
-    answers: [
-      "Hypertext Markup Language",
-      "Hypertext Markdown Language",
-      "Hyperloop Machine Language",
-      "Helicopters Terminals Motorboats Lamborginis",
-    ],
-    correct: 1,
-  },
-  {
-    question: "В каком году был создан JavaScript?",
-    answers: ["1996", "1995", "1994", "все ответы неверные"],
-    correct: 2,
-  },
-];
-
 const headerContainer = document.querySelector("#header");
 const listContainer = document.querySelector("#list");
 const submitBtn = document.querySelector("#submit");
 
+let questions = [];
 let score = 0;
 let questionIndex = 0;
+
+const fetchQuestions = async () => {
+  const response = await fetch("https://9af697c175fbd382.mokky.dev/questions");
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Something went wrong");
+  }
+
+  questions = data;
+  showQuestion();
+};
 
 const clearHTML = () => {
   headerContainer.innerHTML = "";
@@ -44,20 +24,26 @@ const clearHTML = () => {
 };
 
 const showQuestion = () => {
-  const title = `<h2 class="title">${questions[questionIndex]["question"]}</h2>`;
+  if (questions.length === 0) {
+    headerContainer.innerHTML = "<h2 class='title'>Вопросы не загружены</h2>";
+    return;
+  }
 
+  const title = `<h2 class="title">${questions[questionIndex]["question"]}</h2>`;
   headerContainer.innerHTML = title;
 
-  for ([index, ansewrText] of questions[questionIndex]["answers"].entries()) {
+  for (const [index, answerText] of questions[questionIndex][
+    "answers"
+  ].entries()) {
     const answerHTML = `
-					<li>
-            <label>
-              <input value="${
-                index + 1
-              }" type="radio" class="answer" name="answer" />
-              <span>${ansewrText}</span>
-            </label>
-          </li>`;
+      <li>
+        <label>
+          <input value="${
+            index + 1
+          }" type="radio" class="answer" name="answer" />
+          <span>${answerText}</span>
+        </label>
+      </li>`;
 
     listContainer.innerHTML += answerHTML;
   }
@@ -105,13 +91,13 @@ const showResults = () => {
     message = "Вы дали меньше половины правильных ответов!";
   }
 
-  const resaultsTemplate = `
-				<h2 class="title">${title}</h2>
-        <h3 class="summary">${message}</h3>
-        <p class="result">Ваш результат ${score} из ${questions.length}</p>
-				`;
+  const resultsTemplate = `
+    <h2 class="title">${title}</h2>
+    <h3 class="summary">${message}</h3>
+    <p class="result">Ваш результат ${score} из ${questions.length}</p>
+  `;
 
-  headerContainer.innerHTML += resaultsTemplate;
+  headerContainer.innerHTML += resultsTemplate;
   submitBtn.innerHTML = "Попробовать заново";
   submitBtn.onclick = function refreshPage() {
     window.location.reload();
@@ -119,5 +105,5 @@ const showResults = () => {
 };
 
 clearHTML();
-showQuestion();
+fetchQuestions();
 submitBtn.onclick = checkAnswer;
