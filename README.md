@@ -1,5 +1,5 @@
 ## Simple-Quiz
 
-An intellectual quiz.
+An intellectual quiz with API.
 
 ![alt text](img/quiz.jpg)
